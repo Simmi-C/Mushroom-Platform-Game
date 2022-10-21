@@ -138,9 +138,6 @@ void DrawUI()
 	Play::DrawObject(obj_heart);
 	Play::DrawFontText("64px", ":" + std::to_string(gameState.lives), {Play::cameraPos.x + DISPLAY_WIDTH - 100, Play::cameraPos.y + 32}, Play::CENTRE);
 	
-	//instructions
-	Play::DrawFontText("64px", "ARROW KEYS TO MOVE. SPACE TO JUMP", { Play::cameraPos.x + DISPLAY_WIDTH / 2, Play::cameraPos.y + DISPLAY_HEIGHT - 70 }, Play::CENTRE);
-
 	//mouse position
 	//Vector2f mousepos = Play::GetMousePos();
 	//Play::DrawFontText("64px", std::to_string(mousepos.x) + ", " + std::to_string(mousepos.y), (Play::cameraPos + mousepos), Play::LEFT);
@@ -200,6 +197,9 @@ void DrawPlatformsandJumpPads()
 		Play::DrawObject(obj_jumppad);
 	}
 	
+	//instructions
+	Play::DrawFontText("64px", "ARROW KEYS TO MOVE. SPACE TO JUMP", { DISPLAY_WIDTH / 2, 1840 }, Play::CENTRE);
+
 }
 
 void DefineCollectables()
@@ -389,7 +389,7 @@ bool CheckPlatformCollisions(GameObject& character)
 			StandingOnPlatform = true;
 			if (character.pos.y < obj_platform.pos.y) 
 			{ 
-				character.pos.y = obj_platform.pos.y + 1 - character_height / 2; 
+				character.pos.y = obj_platform.pos.y + 10 - character_height / 2; 
 			}
 			if (character.pos.y > obj_platform.pos.y)
 			{
