@@ -14,6 +14,7 @@ enum CharacterState
 	STATE_WALKING,
 	STATE_JUMPING,
 	STATE_FALLING,
+	STATE_DAMAGED,
 	STATE_DEAD,
 	STATE_LEVEL_COMPLETE,
 };
@@ -78,6 +79,8 @@ void MainGameEntry( PLAY_IGNORE_COMMAND_LINE )
 	Play::CentreSpriteOrigin("star");
 	Play::CentreSpriteOrigin("heart");
 	Play::MoveSpriteOrigin("flag", 22, 39);
+	
+
 	DefinePlatformsandJumpPads();
 	
 	Play::CreateGameObject(TYPE_CHARACTER, { 300, 1600 }, 36, "mushroom_walk_right");
@@ -126,7 +129,7 @@ void DrawUI()
 	Play::DrawFontText("64px", ":" + std::to_string(gameState.score), { Play::cameraPos.x + 110, Play::cameraPos.y + 32 }, Play::CENTRE);
 
 	//frame
-	Play::DrawFontText("64px", "Obj_character frame:" + std::to_string(obj_character.frame), { Play::cameraPos.x + DISPLAY_WIDTH / 2, Play::cameraPos.y + 50 }, Play::CENTRE);
+	//Play::DrawFontText("64px", "Obj_character frame:" + std::to_string(obj_character.frame), { Play::cameraPos.x + DISPLAY_WIDTH / 2, Play::cameraPos.y + 50 }, Play::CENTRE);
 
 	//lives
 	GameObject& obj_heart = Play::GetGameObjectByType(TYPE_UI_HEART);
@@ -139,8 +142,8 @@ void DrawUI()
 	Play::DrawFontText("64px", "ARROW KEYS TO MOVE. SPACE TO JUMP", { Play::cameraPos.x + DISPLAY_WIDTH / 2, Play::cameraPos.y + DISPLAY_HEIGHT - 70 }, Play::CENTRE);
 
 	//mouse position
-	Vector2f mousepos = Play::GetMousePos();
-	Play::DrawFontText("64px", std::to_string(mousepos.x) + ", " + std::to_string(mousepos.y), (Play::cameraPos + mousepos), Play::LEFT);
+	//Vector2f mousepos = Play::GetMousePos();
+	//Play::DrawFontText("64px", std::to_string(mousepos.x) + ", " + std::to_string(mousepos.y), (Play::cameraPos + mousepos), Play::LEFT);
 }
 
 void DefinePlatformsandJumpPads()
@@ -192,6 +195,7 @@ void DrawPlatformsandJumpPads()
 				obj_character.velocity.y = -(17 + obj_character.velocity.y * 0.25);
 			}
 			gameState.characterState = STATE_JUMPING;
+			Play::PlayAudio("Jumppad");
 		}
 		Play::DrawObject(obj_jumppad);
 	}
@@ -230,6 +234,7 @@ void UpdateCollectables()
 			obj_collectable.type = TYPE_COLLECTED;
 			collected = true;
 			gameState.score += 1;
+			Play::PlayAudio("Collect_Star");
 		}
 
 		Play::UpdateGameObject(obj_collectable);
@@ -256,9 +261,10 @@ void UpdateCollected()
 		
 		if (vCollected.size() == 10 && gameState.characterState != STATE_LEVEL_COMPLETE) 
 		{ 
-			Play::DrawFontText("64px", "PRESS SPACE TO RETURN STARS", { DISPLAY_WIDTH / 2, DISPLAY_HEIGHT / 2 }, Play::CENTRE);
-			if (Play::KeyPressed(VK_SPACE))
+			Play::DrawFontText("64px", "PRESS E TO RETURN STARS", { DISPLAY_WIDTH / 2, DISPLAY_HEIGHT / 2 }, Play::CENTRE);
+			if (Play::KeyPressed('E'))
 			{
+				Play::PlayAudio("Collect_flag");
 				gameState.characterState = STATE_LEVEL_COMPLETE;
 			}
 		}
@@ -316,11 +322,13 @@ void UpdateEnemies()
 			gameState.characterState = STATE_JUMPING;
 			obj_character.velocity.y = -10;
 			obj_enemy.type = TYPE_DESTROYED;
+			Play::PlayAudio("HitSnail");
 			
 		}
 		else if (!(gameState.characterState == STATE_FALLING) && Play::IsColliding(obj_enemy, obj_character) && gameState.lives !=0)
 		{
-			gameState.characterState = STATE_DEAD;
+			
+			gameState.characterState = STATE_DAMAGED;
 			gameState.lives -= 1;
 		}
 	
@@ -410,6 +418,7 @@ void Standing()
 		else if (Play::KeyPressed(VK_SPACE))
 		{
 			obj_character.velocity.y = -13;
+			Play::PlayAudio("Jump");
 			gameState.characterState = STATE_JUMPING;
 		}
 		else
@@ -458,6 +467,7 @@ void Walking()
 
 	if (Play::KeyPressed(VK_SPACE))
 	{
+		Play::PlayAudio("Jump");
 		obj_character.velocity.y = -13;
 		gameState.characterState = STATE_JUMPING;
 	}
@@ -601,19 +611,17 @@ void FacingRight()
 void CompletedLevel()
 {
 	GameObject& obj_character = Play::GetGameObjectByType(TYPE_CHARACTER);
-	GameObject& obj_flag = Play::GetGameObjectByType(TYPE_FLAG);
-
 	obj_character.velocity = { 0,0 };
-	
-
 	Play::DrawObject(obj_character);
+	Play::DrawFontText("64px", "You did it! Press enter to restart the level", { DISPLAY_WIDTH / 2, DISPLAY_HEIGHT / 2 }, Play::CENTRE);
 
 	std::vector<int> vCollected = Play::CollectGameObjectIDsByType(TYPE_COLLECTED);
-	Play::CentreSpriteOrigin("twinkle_star4");
 	std::vector<Point2f> SparkleCoordinates = { {467, 50}, {557 ,50} ,{422 ,95}, {512 ,95}, {602 ,95}, {422 ,140}, {602 ,140}, {467 ,185}, {557 ,185}, {512 ,230} };
+
 	for (int id_collected : vCollected)
 	{
 		GameObject& obj_collected = Play::GetGameObject(id_collected);
+		Play::CentreSpriteOrigin("twinkle_star4");
 		Play::SetSprite(obj_collected, "twinkle_star4", 0.05f);
 
 		for (int i = 0; i < vCollected.size(); i++)
@@ -638,6 +646,7 @@ void UpdateCharacter()
 	switch (gameState.characterState)
 	{
 	case STATE_START:
+		Play::StartAudioLoop("sleepytime");
 		obj_character.pos = { 300, 1600 };
 		gameState.lives = 3;
 		gameState.score = 0;
@@ -665,21 +674,29 @@ void UpdateCharacter()
 		Falling();
 		break;
 
-	case STATE_DEAD:
+	case STATE_DAMAGED:
+		
 		if (gameState.lives > 0) {
+			Play::PlayAudio("Damage");
 			obj_character.pos = { 300, 1600 };
 			gameState.characterState = STATE_APPEAR;
 		}
 		else {
-			if (Play::KeyPressed(VK_SPACE))
-			{
-				Play::DestroyGameObjectsByType(TYPE_FLAG);
-				Play::DestroyGameObjectsByType(TYPE_COLLECTABLE);
-				Play::DestroyGameObjectsByType(TYPE_COLLECTED);
-				Play::DestroyGameObjectsByType(TYPE_ENEMY);
+			Play::PlayAudio("Dead");
+			gameState.characterState = STATE_DEAD;
+		}
+		break;
+	case STATE_DEAD:
+		Play::StopAudioLoop("sleepytime");
+		Play::DrawFontText("64px", "Those pesky snails! Press enter to restart the level", { Play::cameraPos.x + DISPLAY_WIDTH / 2, Play::cameraPos.y + DISPLAY_HEIGHT / 2 }, Play::CENTRE);
+		if (Play::KeyPressed(VK_RETURN))
+		{
+			Play::DestroyGameObjectsByType(TYPE_FLAG);
+			Play::DestroyGameObjectsByType(TYPE_COLLECTABLE);
+			Play::DestroyGameObjectsByType(TYPE_COLLECTED);
+			Play::DestroyGameObjectsByType(TYPE_ENEMY);
 
-				gameState.characterState = STATE_START;
-			}
+			gameState.characterState = STATE_START;
 		}
 		break;
 
