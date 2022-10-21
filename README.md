@@ -11,7 +11,7 @@ Collect all the stars before reaching the flag.
 
 Colliding with snails will cost you a life. But jumping on their shells will send them to... the other side.
 
-Running off the side of the screen will put you at the other side (this may come in handy ;)). 
+Running off the side of the screen will put you at the other side (this may come in handy). 
 
 Jumping on a jumppad will give you a boost to reach high platforms.
 
