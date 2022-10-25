@@ -72,41 +72,31 @@ void CompletedLevel();
 // The entry point for a PlayBuffer program
 void MainGameEntry( PLAY_IGNORE_COMMAND_LINE )
 {
-	Play::CreateManager( DISPLAY_WIDTH, DISPLAY_HEIGHT, DISPLAY_SCALE );
-	//Play::LoadBackground("Data\\Backgrounds\\allbackgroundstars.png");
-	int id2 = Play::CreateGameObject(TYPE_BACKGROUND, { 0, 0 }, 0, "sky");
+	Play::CreateManager(DISPLAY_WIDTH, DISPLAY_HEIGHT, DISPLAY_SCALE);
+	Play::CreateGameObject(TYPE_BACKGROUND, { 0, 0 }, 0, "sky");
+
 	Play::CentreMatchingSpriteOrigins("mushroom");
-	Play::CentreSpriteOrigin("star");
-	Play::CentreSpriteOrigin("heart");
-	Play::MoveSpriteOrigin("flag", 22, 39);
-	
-
-	DefinePlatformsandJumpPads();
-	
 	Play::CreateGameObject(TYPE_CHARACTER, { 300, 1600 }, 36, "mushroom_walk_right");
-	int id = Play::CreateGameObject(TYPE_UI_STAR, { Play::cameraPos.x + 70, Play::cameraPos.y + 60 }, 0, "star");
-	int id1 = Play::CreateGameObject(TYPE_UI_HEART, { Play::cameraPos.x + DISPLAY_WIDTH - 140, Play::cameraPos.y + 60 }, 0, "heart");
 
-	
+	Play::CreateGameObject(TYPE_UI_STAR, { Play::cameraPos.x + 70, Play::cameraPos.y + 60 }, 0, "star");
+	Play::CreateGameObject(TYPE_UI_HEART, { Play::cameraPos.x + DISPLAY_WIDTH - 140, Play::cameraPos.y + 60 }, 0, "heart");
+	DefinePlatformsandJumpPads();
 }
 
 // Called by PlayBuffer every frame (60 times a second!)
 bool MainGameUpdate( float elapsedTime )
 {
-	//Play::DrawBackground();
-	Play::ClearDrawingBuffer(Play::cOrange );
-	GameObject& background = Play::GetGameObjectByType(TYPE_BACKGROUND);
-	Play::DrawObject(background);
+	Play::DrawObject(Play::GetGameObjectByType(TYPE_BACKGROUND));
 	DrawPlatformsandJumpPads();
 	UpdateCollectables();
 	UpdateCollected();
 	UpdateEnemies();
 	UpdateDestroyed();
 	DrawUI();
-	UpdateCharacter(); 
+	UpdateCharacter();
 
 	Play::PresentDrawingBuffer();
-	return Play::KeyDown( VK_ESCAPE );
+	return Play::KeyDown(VK_ESCAPE);
 }
 
 // Gets called once when the player quits the game 
@@ -120,6 +110,8 @@ void DrawUI()
 {
 	GameObject& obj_character = Play::GetGameObjectByType(TYPE_CHARACTER);
 	Play::GetCameraPosition();
+	Play::CentreSpriteOrigin("star");
+	Play::CentreSpriteOrigin("heart");
 
 	//stars
 	GameObject& obj_star = Play::GetGameObjectByType(TYPE_UI_STAR);
@@ -128,19 +120,12 @@ void DrawUI()
 	Play::DrawObject(obj_star);
 	Play::DrawFontText("64px", ":" + std::to_string(gameState.score), { Play::cameraPos.x + 110, Play::cameraPos.y + 32 }, Play::CENTRE);
 
-	//frame
-	//Play::DrawFontText("64px", "Obj_character frame:" + std::to_string(obj_character.frame), { Play::cameraPos.x + DISPLAY_WIDTH / 2, Play::cameraPos.y + 50 }, Play::CENTRE);
-
 	//lives
 	GameObject& obj_heart = Play::GetGameObjectByType(TYPE_UI_HEART);
 	obj_heart.pos = { Play::cameraPos.x + DISPLAY_WIDTH - 140, Play::cameraPos.y + 60 };
 	Play::UpdateGameObject(obj_heart);
 	Play::DrawObject(obj_heart);
-	Play::DrawFontText("64px", ":" + std::to_string(gameState.lives), {Play::cameraPos.x + DISPLAY_WIDTH - 100, Play::cameraPos.y + 32}, Play::CENTRE);
-	
-	//mouse position
-	//Vector2f mousepos = Play::GetMousePos();
-	//Play::DrawFontText("64px", std::to_string(mousepos.x) + ", " + std::to_string(mousepos.y), (Play::cameraPos + mousepos), Play::LEFT);
+	Play::DrawFontText("64px", ":" + std::to_string(gameState.lives), { Play::cameraPos.x + DISPLAY_WIDTH - 100, Play::cameraPos.y + 32 }, Play::CENTRE);;
 }
 
 void DefinePlatformsandJumpPads()
@@ -163,7 +148,6 @@ void DefinePlatformsandJumpPads()
 	{
 		Play::CreateGameObject(TYPE_JUMPPAD, coordinate, 27, "jumppad");
 	}
-	
 }
 
 void DrawPlatformsandJumpPads()
@@ -199,7 +183,6 @@ void DrawPlatformsandJumpPads()
 	
 	//instructions
 	Play::DrawFontText("64px", "ARROW KEYS TO MOVE. SPACE TO JUMP", { DISPLAY_WIDTH / 2, 1840 }, Play::CENTRE);
-
 }
 
 void DefineCollectables()
@@ -210,12 +193,10 @@ void DefineCollectables()
 		int id = Play::CreateGameObject(TYPE_COLLECTABLE, coordinate, 20, "star13");
 		Play::GetGameObject(id).animSpeed = 0.25f;
 	}
-
 	Play::CentreSpriteOrigin("star13");
-	
-	
-	int id = Play::CreateGameObject(TYPE_FLAG, { DISPLAY_WIDTH/2 + 7 , 320 }, 25, "flag");
-	
+
+	Play::MoveSpriteOrigin("flag", 22, 39);
+	Play::CreateGameObject(TYPE_FLAG, { DISPLAY_WIDTH/2 + 7 , 320 }, 25, "flag");
 }
 
 void UpdateCollectables()
@@ -258,7 +239,6 @@ void UpdateCollected()
 
 	if (Play::IsColliding(obj_flag, obj_character))
 	{
-		
 		if (vCollected.size() == 10 && gameState.characterState != STATE_LEVEL_COMPLETE) 
 		{ 
 			Play::DrawFontText("64px", "PRESS E TO RETURN STARS", { DISPLAY_WIDTH / 2, DISPLAY_HEIGHT / 2 }, Play::CENTRE);
@@ -274,13 +254,11 @@ void UpdateCollected()
 			Play::DrawFontText("64px", std::to_string(starsLeft) + " STARS LEFT TO COLLECT!", { DISPLAY_WIDTH / 2, DISPLAY_HEIGHT / 2 }, Play::CENTRE);
 		}
 	}
-
 }
 
 void DefineEnemies()
 {
 	std::vector<Point2f> enemy_coordinates = { {435 ,1135}, {635, 1635}, {35, 835}, {135, 535} };
-
 	for (Point2f coordinate : enemy_coordinates)
 	{
 		int id = Play::CreateGameObject(TYPE_ENEMY, coordinate, 30, "snail_right");
@@ -327,11 +305,9 @@ void UpdateEnemies()
 		}
 		else if (!(gameState.characterState == STATE_FALLING) && Play::IsColliding(obj_enemy, obj_character) && gameState.lives !=0)
 		{
-			
 			gameState.characterState = STATE_DAMAGED;
 			gameState.lives -= 1;
 		}
-	
 		Play::DrawObject(obj_enemy);
 	}
 }
@@ -356,20 +332,22 @@ void UpdateDestroyed()
 		obj_destroyed.velocity.x = 0;
 		Play::UpdateGameObject(obj_destroyed);
 
-		if (obj_destroyed.frame % 2) 
-			Play::DrawObjectRotated(obj_destroyed, (10 - obj_destroyed.frame) / 10.0f); 
-
-		if (!Play::IsVisible(obj_destroyed) || obj_destroyed.frame >= 10)  
+		if (obj_destroyed.frame % 2)
+		{
+			Play::DrawObjectRotated(obj_destroyed, (10 - obj_destroyed.frame) / 10.0f);
+		}
+		if (!Play::IsVisible(obj_destroyed) || obj_destroyed.frame >= 10)
+		{
 			Play::DestroyGameObject(id_destroyed);
+		}
 	}
 }
-
 
 bool CheckPlatformCollisions(GameObject& character)
 {
 	int platform_width = Play::GetSpriteWidth("platform");
 	int platform_height = Play::GetSpriteHeight("platform");
-	float character_width = Play::GetSpriteWidth("mushroom") - 36;
+	float character_width = Play::GetSpriteWidth("mushroom") - 36;  //account for width of boundary box we want for the mushroom. We would want the horizontal collisions to occur with their feet 
 	float character_height = Play::GetSpriteHeight("mushroom");
 
 	bool StandingOnPlatform = false;
@@ -398,9 +376,7 @@ bool CheckPlatformCollisions(GameObject& character)
 			}
 		}
 	}
-
 	return StandingOnPlatform;
-
 }
 
 void Standing()
@@ -412,7 +388,6 @@ void Standing()
 	{
 		if (Play::KeyPressed(VK_LEFT) || Play::KeyPressed(VK_RIGHT) || Play::KeyDown(VK_LEFT) || Play::KeyDown(VK_RIGHT))
 		{
-
 			gameState.characterState = STATE_WALKING;
 		}
 		else if (Play::KeyPressed(VK_SPACE))
@@ -472,27 +447,16 @@ void Walking()
 		gameState.characterState = STATE_JUMPING;
 	}
 
-			//Walking in to side of platform
-			/*if (obj_character.velocity.x > 0)
-				obj_character.pos.x = obj_platform.pos.x - character_width / 2;
-			else if (obj_character.velocity.x < 0)
-				obj_character.pos.x = obj_platform.pos.x + platform_width + character_width / 2;
-			obj_character.velocity = { 0,0 };
-			gameState.characterState = STATE_STANDING;*/
-	
 	if (!CheckPlatformCollisions(obj_character))
 	{
 		gameState.characterState = STATE_FALLING;
 	}
 
 	Play::DrawObject(obj_character);
-	
 }
 
 void Jumping()
 {
-	float character_width = Play::GetSpriteWidth("mushroom");
-	int platform_width = Play::GetSpriteWidth("platform");
 	GameObject& obj_character = Play::GetGameObjectByType(TYPE_CHARACTER);
 	obj_character.velocity.y += 0.5;
 	FacingRight();
@@ -521,46 +485,17 @@ void Jumping()
 	{
 		obj_character.velocity.y = 0;
 		gameState.characterState = STATE_FALLING;
-
 	}
 
-
-	/*std::vector<int> vPlatforms = Play::CollectGameObjectIDsByType(TYPE_PLATFORM);
-	for (int id : vPlatforms)
-	{
-		GameObject& obj_platform = Play::GetGameObject(id);
-
-		if (CheckPlatformCollisions(obj_character, obj_platform)) {
-			obj_character.pos = obj_character.oldPos;
-
-			float normalisedvector = sqrt(obj_character.velocity.x * obj_character.velocity.x + obj_character.velocity.y * obj_character.velocity.y);
-			Point2f directionvector = obj_character.velocity * normalisedvector;
-			obj_character.velocity = directionvector;
-
-			if (CheckXAxisCollisions(obj_character, obj_platform) && !CheckYAxisCollisions(obj_character,obj_platform))
-			{
-				if (obj_character.velocity.x > 0)
-					obj_character.pos.x = obj_platform.pos.x - character_width / 2;
-				else if (obj_character.velocity.x < 0)
-					obj_character.pos.x = obj_platform.pos.x + platform_width + character_width / 2;
-				obj_character.velocity.x = 0;
-			}
-
-			else if (CheckYAxisCollisions(obj_character, obj_platform))
-			{
-				obj_character.velocity.y = 0;
-				gameState.characterState = STATE_FALLING;
-			}
-		}
-	}*/
 	CheckPlatformCollisions(obj_character);
-
 	Play::DrawObject(obj_character);
 }
 
 void Falling()
 {
 	GameObject& obj_character = Play::GetGameObjectByType(TYPE_CHARACTER);
+	FacingRight();
+
 	if (gameState.facingright)
 	{
 		Play::SetSprite(obj_character, "mushroom_fall_right", 0.25f);
@@ -574,7 +509,8 @@ void Falling()
 	{
 		obj_character.velocity.y += 0.5;
 	}
-	else {
+	else 
+	{
 		obj_character.velocity.y = 13;
 	}
 
@@ -588,7 +524,6 @@ void Falling()
 		obj_character.velocity.x = -4;
 		gameState.facingright = false;
 	}
-	
 
 	if (CheckPlatformCollisions(obj_character))
 	{
@@ -597,7 +532,6 @@ void Falling()
 	}
 
 	Play::DrawObject(obj_character);
-
 }
 
 void FacingRight()
@@ -605,8 +539,6 @@ void FacingRight()
 	if (Play::KeyPressed(VK_RIGHT)) { gameState.facingright = true; }
 	if (Play::KeyPressed(VK_LEFT)) { gameState.facingright = false; }
 }
-
-
 
 void CompletedLevel()
 {
@@ -634,15 +566,20 @@ void CompletedLevel()
 		}
 
 		Play::UpdateGameObject(obj_collected);
-		if (obj_character.frame < 100) { Play::DrawObjectTransparent(obj_collected, obj_character.frame * 0.01); }
-		else { Play::DrawObject(obj_collected); }
+		if (obj_character.frame < 100) 
+		{ 
+			Play::DrawObjectTransparent(obj_collected, obj_character.frame * 0.01); 
+		}
+		else 
+		{ 
+			Play::DrawObject(obj_collected); 
+		}
 	}
 }
 
 void UpdateCharacter()
 {
 	GameObject& obj_character = Play::GetGameObjectByType(TYPE_CHARACTER);
-
 	switch (gameState.characterState)
 	{
 	case STATE_START:
@@ -676,12 +613,14 @@ void UpdateCharacter()
 
 	case STATE_DAMAGED:
 		
-		if (gameState.lives > 0) {
+		if (gameState.lives > 0) 
+		{
 			Play::PlayAudio("Damage");
 			obj_character.pos = { 300, 1600 };
 			gameState.characterState = STATE_APPEAR;
 		}
-		else {
+		else 
+		{
 			Play::PlayAudio("Dead");
 			gameState.characterState = STATE_DEAD;
 		}
@@ -695,7 +634,6 @@ void UpdateCharacter()
 			Play::DestroyGameObjectsByType(TYPE_COLLECTABLE);
 			Play::DestroyGameObjectsByType(TYPE_COLLECTED);
 			Play::DestroyGameObjectsByType(TYPE_ENEMY);
-
 			gameState.characterState = STATE_START;
 		}
 		break;
@@ -708,7 +646,6 @@ void UpdateCharacter()
 			Play::DestroyGameObjectsByType(TYPE_COLLECTABLE);
 			Play::DestroyGameObjectsByType(TYPE_COLLECTED);
 			Play::DestroyGameObjectsByType(TYPE_ENEMY);
-			
 			gameState.characterState = STATE_START;
 		}
 		break;
@@ -740,11 +677,10 @@ void UpdateCharacter()
 	Play::UpdateGameObject(obj_character);
 }
 
-/* TO DO
-Week 6:
-Start of level.
-Level completion sequence ( stars fly up to space. Option to move to next level, or restart level)
 
-Jumping up in to platforms, bounces off
-Colliding with side of platform (while jumping or falling) will only stop x velocity. Currently makes it jump up a level
+/*
+Extra functionality to consider adding:
+
+Moving platforms
+Snails change sprite when jumped on
 */
