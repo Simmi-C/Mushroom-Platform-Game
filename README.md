@@ -9,9 +9,9 @@ Use your character (he's a fun guy) to jump through the clouds, collect the fall
 # Game features
 Collect all the stars before reaching the flag. 
 
-Colliding with snails will cost you a life. But jumping on their shells will send them to... the other side.
+Colliding with snails will cost you a life, but jumping on their shells will send them to... the other side.
 
 Running off the side of the screen will put you at the other side (this may come in handy). 
 
-Jumping on a jumppad will give you a boost to reach high platforms.
+Jumping on a jumppad will give you an extra boost to reach high platforms.
 
